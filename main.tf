@@ -1,5 +1,18 @@
 provider "aws" {
   region = local.region
+  assume_role {
+    role_arn = var.assume_role_arn
+  }
+}
+
+### Variables ###
+
+variable "assume_role_arn" {
+  type = string
+}
+
+variable "region" {
+  type = string
 }
 
 ### Locals ###
@@ -8,14 +21,14 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id   = data.aws_caller_identity.current.account_id
-  region       = "sa-east-1"
+  region       = var.region
   project_name = "saturn5"
   origin_id    = "s3-saturn5"
 }
 
 ### S3 Bucket ###
 resource "aws_s3_bucket" "main" {
-  bucket = "${local.project_name}-${local.region}-epomatti"
+  bucket = "${local.project_name}-${local.region}-${local.account_id}"
 }
 
 resource "aws_s3_bucket_acl" "default" {
@@ -31,18 +44,35 @@ resource "aws_s3_bucket_public_access_block" "default" {
   ignore_public_acls      = true
 }
 
+resource "aws_s3_bucket_website_configuration" "main" {
+  bucket = aws_s3_bucket.main.bucket
+
+  index_document {
+    suffix = "index.html"
+  }
+}
+
 ### S3 Objects ###
 
 resource "aws_s3_object" "index" {
   bucket         = aws_s3_bucket.main.bucket
   key            = "index.html"
   content_base64 = filebase64("${path.module}/index.html")
+  content_type   = "text/html"
 }
 
 resource "aws_s3_object" "saturn5" {
   bucket         = aws_s3_bucket.main.bucket
   key            = "saturn5.jpg"
   content_base64 = filebase64("${path.module}/saturn5.jpg")
+  content_type   = "image/jpeg"
+}
+
+resource "aws_s3_object" "saturn5flame" {
+  bucket         = aws_s3_bucket.main.bucket
+  key            = "saturn5-flame.jpg"
+  content_base64 = filebase64("${path.module}/saturn5-flame.jpg")
+  content_type   = "image/jpeg"
 }
 
 # ### CloudFront ###
@@ -97,8 +127,10 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   viewer_certificate {
     cloudfront_default_certificate = true
-    minimum_protocol_version       = "TLSv1.2_2021"
   }
+
+  # WAF Association
+  web_acl_id = aws_wafv2_web_acl.cloudfront.arn
 }
 
 ### CloudFront OAI ###
@@ -120,6 +152,56 @@ resource "aws_s3_bucket_policy" "cloudfront_oai" {
   policy = data.aws_iam_policy_document.s3_policy.json
 }
 
-output "cloudfront_oai_identity_path" {
-  value = aws_cloudfront_origin_access_identity.main.cloudfront_access_identity_path
+
+### WAF ###
+
+resource "aws_wafv2_web_acl" "cloudfront" {
+  name        = "cloudfront-waf"
+  description = "Cloudfront rate based statement."
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "rule-1"
+    priority = 1
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 100
+        aggregate_key_type = "IP"
+
+        scope_down_statement {
+          geo_match_statement {
+            country_codes = ["BR"]
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "friendly-rule-metric-name"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = false
+    metric_name                = "friendly-metric-name"
+    sampled_requests_enabled   = false
+  }
+}
+
+
+### Outputs ###
+
+output "cloudfront_domain" {
+  value = aws_cloudfront_distribution.s3_distribution.domain_name
 }
