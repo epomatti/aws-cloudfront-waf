@@ -1,5 +1,11 @@
 # AWS CloudFront WAF
 
+CloudFront with WAF serving S3 and ELB origins.
+
+<img src="cloudfront.png" />
+
+<img src="web.png" width=500/>
+
 ## Create the infrastructure
 
 Create the `.auto.tfvars` file:
@@ -18,4 +24,12 @@ assume_role_arn = "arn:aws:iam::000000000000:role/OrganizationAccountAccessRole"
 region = "us-east-1"
 ```
 
-<img src="saturn5.jpg" />
+It is required to edit the last LB rule so it fails when the header is not present.
+
+---
+
+### Clean-up
+
+```sh
+terraform destroy -auto-approve
+```

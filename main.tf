@@ -92,6 +92,23 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
+  origin {
+    domain_name = aws_lb.main.dns_name
+    origin_id   = aws_lb.main.dns_name
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+
+    custom_header {
+      name  = "cloudfront-header"
+      value = "abcdef012345"
+    }
+  }
+
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Saturn 5 CloudFront"
@@ -199,9 +216,135 @@ resource "aws_wafv2_web_acl" "cloudfront" {
   }
 }
 
-### API Gateway ###
+### Load Balancer ###
+
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
+  instance_tenancy = "default"
+
+  # Enable DNS hostnames 
+  enable_dns_hostnames = true
+}
+
+### Internet Gateway ###
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "igw-lb"
+  }
+}
+
+### Route Tables ###
+
+resource "aws_default_route_table" "internet" {
+  default_route_table_id = aws_vpc.main.default_route_table_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "internet-rt"
+  }
+}
 
 
+### Subnets ###
+
+resource "aws_subnet" "subnet1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.0.0/24"
+  availability_zone = "us-east-1a"
+
+  # Auto-assign public IPv4 address
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "lb-subnet1"
+  }
+}
+
+resource "aws_subnet" "subnet2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.20.0/24"
+  availability_zone = "us-east-1b"
+
+  # Auto-assign public IPv4 address
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "lb-subnet2"
+  }
+}
+
+resource "aws_security_group" "allow_http_lb" {
+  name        = "Allow HTTP"
+  description = "Allow HTTP inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "lb-sc"
+  }
+}
+
+resource "aws_lb_target_group" "main" {
+  name     = "tg-balancer"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    enabled = true
+    path    = "/"
+  }
+}
+
+resource "aws_lb" "main" {
+  name               = "cached-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.allow_http_lb.id]
+  subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
+}
+
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "host_based_weighted_routing" {
+  listener_arn = aws_lb_listener.main.arn
+  priority     = 1
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+
+  condition {
+    http_header {
+      http_header_name = "cloudfront-header"
+      values           = ["abcdef012345"]
+    }
+  }
+}
 
 
 ### Outputs ###
