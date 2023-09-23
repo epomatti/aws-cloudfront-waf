@@ -21,3 +21,7 @@ variable "elb_auth_header" {
 variable "bucket_regional_domain_name" {
   type = string
 }
+
+variable "country_codes" {
+  type = list(string)
+}

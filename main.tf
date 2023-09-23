@@ -23,10 +23,6 @@ module "bucket" {
   project_name = local.project_name
 }
 
-module "waf" {
-  source = "./modules/waf"
-}
-
 module "vpc" {
   source       = "./modules/vpc"
   project_name = local.project_name
@@ -38,6 +34,11 @@ module "elb" {
   subnets = module.vpc.subnets
 }
 
+module "waf" {
+  source        = "./modules/waf"
+  country_codes = var.waf_country_codes
+}
+
 module "cloudfront" {
   source                      = "./modules/cloudfront"
   project_name                = local.project_name
@@ -46,6 +47,7 @@ module "cloudfront" {
   elb_dns_name                = module.elb.dns_name
   elb_auth_header             = module.elb.auth_header
   waf_arn                     = module.waf.arn
+  country_codes               = var.waf_country_codes
 }
 
 module "oai" {

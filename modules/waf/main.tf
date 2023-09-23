@@ -1,7 +1,13 @@
+provider "aws" {
+  region = "us-east-1"
+  alias  = "useast1"
+}
+
 resource "aws_wafv2_web_acl" "cloudfront" {
   name        = "cloudfront-waf"
   description = "Cloudfront rate based statement."
   scope       = "CLOUDFRONT"
+  provider    = aws.useast1
 
   default_action {
     allow {}
@@ -22,7 +28,7 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 
         scope_down_statement {
           geo_match_statement {
-            country_codes = ["BR"]
+            country_codes = var.country_codes
           }
         }
       }

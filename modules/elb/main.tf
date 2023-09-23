@@ -35,7 +35,7 @@ resource "aws_lb_listener" "main" {
   }
 }
 
-resource "aws_lb_listener_rule" "host_based_weighted_routing" {
+resource "aws_lb_listener_rule" "forward" {
   listener_arn = aws_lb_listener.main.arn
   priority     = 1
 
