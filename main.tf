@@ -42,6 +42,7 @@ module "waf" {
 module "cloudfront" {
   source                      = "./modules/cloudfront"
   project_name                = local.project_name
+  price_class                 = var.cloudfront_price_class
   bucket_regional_domain_name = module.bucket.bucket_regional_domain_name
   elb_dns_name                = module.elb.dns_name
   elb_auth_header             = module.elb.auth_header

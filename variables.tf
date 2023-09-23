@@ -12,3 +12,8 @@ variable "waf_rate_limit" {
   type    = number
   default = 1000
 }
+
+variable "cloudfront_price_class" {
+  type    = string
+  default = "PriceClass_100"
+}

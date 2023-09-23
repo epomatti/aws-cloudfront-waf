@@ -2,6 +2,10 @@ variable "project_name" {
   type = string
 }
 
+variable "price_class" {
+  type = string
+}
+
 variable "waf_arn" {
   type = string
 }
