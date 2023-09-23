@@ -2,9 +2,7 @@
 
 CloudFront with WAF serving S3 and ELB origins.
 
-<img src="cloudfront.png" />
-
-<img src="web.png" width=500/>
+<img src=".assets/cloudfront.png" />
 
 ## Create the infrastructure
 
@@ -24,7 +22,16 @@ assume_role_arn = "arn:aws:iam::000000000000:role/OrganizationAccountAccessRole"
 region = "us-east-1"
 ```
 
+Apply:
+
+```sh
+terraform init
+terraform apply -auto-approve
+```
+
 It is required to edit the last LB rule so it fails when the header is not present.
+
+<img src=".assets/web.png" width=500/>
 
 ---
 
