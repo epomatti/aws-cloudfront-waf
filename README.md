@@ -9,8 +9,9 @@ CloudFront with WAF serving S3 and ELB origins.
 Create the `.auto.tfvars`:
 
 ```terraform
-waf_country_codes = ["US", "BR"]
-waf_rate_limit    = 1000
+cloudfront_price_class = "PriceClass_100"
+waf_country_codes      = ["US", "BR"]
+waf_rate_limit         = 1000
 ```
 
 Apply the infrastructure:
@@ -20,9 +21,14 @@ terraform init
 terraform apply -auto-approve
 ```
 
-It is required to edit the last LB rule so it fails when the header is not present.
+Origins will be available for testing:
 
 <img src=".assets/web.png" width=500/>
+
+
+[Standard logs][1] (access logs) will be enabled by default:
+
+<img src=".assets/cfaccesslogs.png" />
 
 ---
 
@@ -31,3 +37,5 @@ It is required to edit the last LB rule so it fails when the header is not prese
 ```sh
 terraform destroy -auto-approve
 ```
+
+[1]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
