@@ -7,3 +7,8 @@ variable "waf_country_codes" {
   type    = list(string)
   default = ["US", "BR"]
 }
+
+variable "waf_rate_limit" {
+  type    = number
+  default = 1000
+}

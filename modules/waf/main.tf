@@ -23,7 +23,7 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 
     statement {
       rate_based_statement {
-        limit              = 100
+        limit              = var.rate_limit
         aggregate_key_type = "IP"
 
         scope_down_statement {
@@ -36,14 +36,14 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 
     visibility_config {
       cloudwatch_metrics_enabled = false
-      metric_name                = "friendly-rule-metric-name"
+      metric_name                = "rate-limit-metric"
       sampled_requests_enabled   = false
     }
   }
 
   visibility_config {
     cloudwatch_metrics_enabled = false
-    metric_name                = "friendly-metric-name"
+    metric_name                = "waf-metric"
     sampled_requests_enabled   = false
   }
 }

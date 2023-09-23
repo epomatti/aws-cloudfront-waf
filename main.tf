@@ -36,6 +36,7 @@ module "elb" {
 module "waf" {
   source        = "./modules/waf"
   country_codes = var.waf_country_codes
+  rate_limit    = var.waf_rate_limit
 }
 
 module "cloudfront" {

@@ -6,7 +6,14 @@ CloudFront with WAF serving S3 and ELB origins.
 
 ## Create the infrastructure
 
-Applied the infrastructure:
+Create the `.auto.tfvars`:
+
+```terraform
+waf_country_codes = ["US", "BR"]
+waf_rate_limit    = 1000
+```
+
+Apply the infrastructure:
 
 ```sh
 terraform init
