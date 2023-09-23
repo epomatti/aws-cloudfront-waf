@@ -7,6 +7,13 @@ resource "aws_cloudfront_origin_access_identity" "main" {
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  price_class         = var.price_class
+  web_acl_id          = var.waf_arn
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "Saturn 5 CloudFront"
+  default_root_object = "index.html"
+
   origin {
     domain_name = var.bucket_regional_domain_name
     origin_id   = local.origin_id
@@ -33,10 +40,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
-  enabled             = true
-  is_ipv6_enabled     = true
-  comment             = "Saturn 5 CloudFront"
-  default_root_object = "index.html"
+
 
   default_cache_behavior {
     allowed_methods  = ["HEAD", "GET"]
@@ -57,8 +61,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     max_ttl                = 86400
   }
 
-  price_class = var.price_class
-
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
@@ -70,6 +72,58 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     cloudfront_default_certificate = true
   }
 
-  # WAF Association
-  web_acl_id = var.waf_arn
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.main.bucket_domain_name
+    prefix          = "cloudfront/"
+  }
+
+  depends_on = [
+    aws_s3_bucket_policy.cloudfront_oai,
+    aws_s3_bucket_acl.cloudfront,
+  ]
+}
+
+
+### S3 Bucket ###
+
+resource "random_string" "random_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
+resource "aws_s3_bucket" "main" {
+  bucket = "cloufrontlogs-saturn5-${random_string.random_suffix.result}"
+}
+
+data "aws_iam_policy_document" "s3_policy" {
+  statement {
+    actions   = ["s3:*"]
+    resources = ["${aws_s3_bucket.main.arn}/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.main.iam_arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "cloudfront_oai" {
+  bucket = aws_s3_bucket.main.id
+  policy = data.aws_iam_policy_document.s3_policy.json
+}
+
+resource "aws_s3_bucket_ownership_controls" "main" {
+  bucket = aws_s3_bucket.main.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "cloudfront" {
+  depends_on = [aws_s3_bucket_ownership_controls.main]
+
+  bucket = aws_s3_bucket.main.id
+  acl    = "private"
 }
