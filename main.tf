@@ -13,7 +13,6 @@ provider "aws" {
 
 locals {
   project_name = "saturn5"
-  origin_id    = "s3-saturn5"
 }
 
 # Resources
@@ -43,7 +42,6 @@ module "cloudfront" {
   source                      = "./modules/cloudfront"
   project_name                = local.project_name
   bucket_regional_domain_name = module.bucket.bucket_regional_domain_name
-  origin_id                   = local.origin_id
   elb_dns_name                = module.elb.dns_name
   elb_auth_header             = module.elb.auth_header
   waf_arn                     = module.waf.arn

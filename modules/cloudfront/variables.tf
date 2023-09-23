@@ -6,10 +6,6 @@ variable "waf_arn" {
   type = string
 }
 
-variable "origin_id" {
-  type = string
-}
-
 variable "elb_dns_name" {
   type = string
 }

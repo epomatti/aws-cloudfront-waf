@@ -1,3 +1,7 @@
+locals {
+  origin_id = "s3-saturn5"
+}
+
 resource "aws_cloudfront_origin_access_identity" "main" {
   comment = "S3 CloudFront OAI"
 }
@@ -5,7 +9,7 @@ resource "aws_cloudfront_origin_access_identity" "main" {
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = var.bucket_regional_domain_name
-    origin_id   = var.origin_id
+    origin_id   = local.origin_id
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.main.cloudfront_access_identity_path
@@ -37,7 +41,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   default_cache_behavior {
     allowed_methods  = ["HEAD", "GET"]
     cached_methods   = ["HEAD", "GET"]
-    target_origin_id = var.origin_id
+    target_origin_id = local.origin_id
 
     forwarded_values {
       query_string = false
