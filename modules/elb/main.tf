@@ -30,8 +30,14 @@ resource "aws_lb_listener" "main" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
+    type             = "fixed-response"
     target_group_arn = aws_lb_target_group.main.arn
+
+    fixed_response {
+      status_code  = 503
+      content_type = "text/plain"
+      message_body = "Default error reponse. The request did not match any rules."
+    }
   }
 }
 
@@ -40,8 +46,14 @@ resource "aws_lb_listener_rule" "forward" {
   priority     = 1
 
   action {
-    type             = "forward"
+    type             = "fixed-response"
     target_group_arn = aws_lb_target_group.main.arn
+
+    fixed_response {
+      status_code  = 200
+      content_type = "text/plain"
+      message_body = "Verified the CloudFront authentication header."
+    }
   }
 
   condition {
@@ -49,6 +61,14 @@ resource "aws_lb_listener_rule" "forward" {
       http_header_name = "X-CloudFront-Auth"
       values           = [random_string.auth_header.result]
     }
+  }
+
+  tags = {
+    "Name" = "CloudFront"
+  }
+
+  tags_all = {
+    "Name" = "CloudFront"
   }
 }
 

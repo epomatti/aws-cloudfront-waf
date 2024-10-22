@@ -28,6 +28,7 @@ Origins will be available for testing:
 
 <img src=".assets/cfaccesslogs.png" />
 
+
 ---
 
 ### Clean-up
@@ -37,3 +38,6 @@ terraform destroy -auto-approve
 ```
 
 [1]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+[2]: https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/
+[3]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/LocationsOfEdgeServers.html
+[4]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/restrict-access-to-load-balancer.html

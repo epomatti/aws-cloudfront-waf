@@ -40,8 +40,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
-
-
   default_cache_behavior {
     allowed_methods  = ["HEAD", "GET"]
     cached_methods   = ["HEAD", "GET"]
@@ -59,6 +57,34 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+  }
+
+  ordered_cache_behavior {
+    allowed_methods = [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT",
+    ]
+    cache_policy_id = "83da9c7e-98b4-4e11-a168-04f0df8e2c65"
+    cached_methods = [
+      "GET",
+      "HEAD",
+    ]
+    compress                 = true
+    default_ttl              = 0
+    max_ttl                  = 0
+    min_ttl                  = 0
+    origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
+    path_pattern             = "/elb"
+    smooth_streaming         = false
+    target_origin_id         = var.elb_dns_name
+    trusted_key_groups       = []
+    trusted_signers          = []
+    viewer_protocol_policy   = "allow-all"
   }
 
   restrictions {
