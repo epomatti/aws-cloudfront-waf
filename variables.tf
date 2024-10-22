@@ -17,3 +17,11 @@ variable "cloudfront_price_class" {
   type    = string
   default = "PriceClass_100"
 }
+
+variable "enable_cloudfront_managed_prefix" {
+  type = bool
+}
+
+variable "elb_cloudfront_managed_prefix_list_id" {
+  type = string
+}

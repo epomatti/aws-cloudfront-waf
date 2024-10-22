@@ -20,7 +20,7 @@ resource "aws_lb" "main" {
   name               = "cached-balancer"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.allow_http_lb.id]
+  security_groups    = var.enable_cloudfront_managed_prefix ? [aws_security_group.allow_http_with_cloudfront_managed_prefix.id] : [aws_security_group.allow_http_lb.id]
   subnets            = var.subnets
 }
 
@@ -87,5 +87,23 @@ resource "aws_security_group" "allow_http_lb" {
 
   tags = {
     Name = "lb-sc"
+  }
+}
+
+resource "aws_security_group" "allow_http_with_cloudfront_managed_prefix" {
+  name        = "Allow HTTP with CloudFront Managed Prefix"
+  description = "Allow HTTP inbound traffic with CloudFront Managed Prefix"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description     = "Allow HTTP with CloudFront Managed Prefix"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    prefix_list_ids = [var.cloudfront_managed_prefix_list_id]
+  }
+
+  tags = {
+    Name = "lb-cloudfront-prefix"
   }
 }

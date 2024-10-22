@@ -29,6 +29,16 @@ Origins will be available for testing:
 <img src=".assets/cfaccesslogs.png" />
 
 
+### CloudFront
+
+To [restrict the ELB][2] to accept only CloudFront origins, set the security group to use the managed prefix `com.amazonaws.global.cloudfront.origin-facing`.
+
+```terraform
+enable_cloudfront_managed_prefix = true
+```
+
+More can be found in the [location for edge servers][3] and [restricting access to load balancer][4].
+
 ---
 
 ### Clean-up

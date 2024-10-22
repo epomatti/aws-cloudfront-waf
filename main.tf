@@ -26,9 +26,11 @@ module "vpc" {
 }
 
 module "elb" {
-  source  = "./modules/elb"
-  vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.subnets
+  source                            = "./modules/elb"
+  vpc_id                            = module.vpc.vpc_id
+  subnets                           = module.vpc.subnets
+  enable_cloudfront_managed_prefix  = var.enable_cloudfront_managed_prefix
+  cloudfront_managed_prefix_list_id = var.elb_cloudfront_managed_prefix_list_id
 }
 
 module "waf" {
