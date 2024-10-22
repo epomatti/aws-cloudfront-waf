@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "5.17.0"
+      version = "5.72.1"
     }
   }
 }
@@ -14,8 +14,6 @@ provider "aws" {
 locals {
   project_name = "saturn5"
 }
-
-# Resources
 
 module "bucket" {
   source       = "./modules/s3/bucket"

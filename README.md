@@ -8,10 +8,8 @@ CloudFront with WAF serving S3 and ELB origins.
 
 Create the `.auto.tfvars`:
 
-```terraform
-cloudfront_price_class = "PriceClass_100"
-waf_country_codes      = ["US", "BR"]
-waf_rate_limit         = 1000
+```sh
+cp config/template.auto.tfvars .auto.tfvars
 ```
 
 Apply the infrastructure:
