@@ -29,7 +29,7 @@ Origins will be available for testing:
 <img src=".assets/cfaccesslogs.png" />
 
 
-### CloudFront managed prefix
+## CloudFront managed prefix
 
 Additional security can be implemented by [restricting the ELB][2] into accepting only CloudFront origins. Enable that by setting the security group to use the AWS managed prefix `com.amazonaws.global.cloudfront.origin-facing`.
 
