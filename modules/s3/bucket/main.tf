@@ -6,21 +6,9 @@ resource "random_string" "random_suffix" {
 
 ### S3 Bucket ###
 resource "aws_s3_bucket" "main" {
-  bucket = "${var.project_name}-${random_string.random_suffix.result}"
+  bucket        = "${var.project_name}-${random_string.random_suffix.result}"
+  force_destroy = true
 }
-
-# resource "aws_s3_bucket_acl" "default" {
-#   bucket = aws_s3_bucket.main.id
-#   acl    = "private"
-# }
-
-# resource "aws_s3_bucket_public_access_block" "default" {
-#   bucket                  = aws_s3_bucket.main.id
-#   block_public_acls       = true
-#   block_public_policy     = true
-#   restrict_public_buckets = true
-#   ignore_public_acls      = true
-# }
 
 resource "aws_s3_bucket_website_configuration" "main" {
   bucket = aws_s3_bucket.main.bucket
